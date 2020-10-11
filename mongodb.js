@@ -8,6 +8,9 @@ const databaseName = 'Task-Manager'
 MongoClient.connect(connectionURL, { useNewUrlParser: true, useUnifiedTopology: true }, (error, client) => {
     if (error)
         return console.log('Error occured with database')
+    else {
+        console.log('hello connected')
+    }
     
     //select if present else create database with the databaseName
     const db = client.db(databaseName);
