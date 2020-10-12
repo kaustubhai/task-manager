@@ -61,8 +61,19 @@ userSchema.methods.generateAuthToken = async function() {
     return token
 }
 
-userSchema.pre('save', async function (next) {
+userSchema.methods.protectedData = (user) => {
+    const obj = user.toObject()
 
+    obj.windows = obj.tokens.length;
+
+    delete obj.password; 
+    delete obj.tokens;
+
+    return obj;
+}
+
+userSchema.pre('save', async function (next) {
+    
     if (this.isModified('password'))
         this.password = await bcrypt.hash(this.password, 8)
     next()

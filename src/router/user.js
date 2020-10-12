@@ -25,25 +25,14 @@ Router.post('/user', async (req, res) => {
 
 
 //Login user
-// Router.post('/user/login', async (req, res) => {
-//     try {
-//         const user = await User.validateUser(req.body.email, req.body.password)
-//         const token = await user.createToken()
-//         res.send({ user, token })
-//     }
-//     catch (e) {
-//         res.status(400).send('Login Error')
-//     }
-// })
-
 Router.post('/users/login', async (req, res) => {
+    try{
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
-        res.send({ user, token })
-})
-
-Router.get('/say', (req, res) => {
-    res.send('hello')
+        res.send({ user: user.protectedData(user), token })
+    } catch (e) {
+        res.status(401).send();
+    }
 })
 
 //Logout user
