@@ -16,7 +16,7 @@ Router.post('/user', async (req, res) => {
         if (!account)
             return res.status(400).send('Invalid Request')
         const token = await user.generateAuthToken()
-        res.status(201).send({account, token})
+        res.status(201).send({account: account.protectedData(account), token})
     }
     catch (e) {
         res.status(500).send(e)
@@ -31,7 +31,7 @@ Router.post('/users/login', async (req, res) => {
         const token = await user.generateAuthToken()
         res.send({ user: user.protectedData(user), token })
     } catch (e) {
-        res.status(401).send();
+        res.status(401).send('Email Password incorrect');
     }
 })
 
@@ -62,42 +62,18 @@ Router.get('/user/me', auth, async (req, res) => {
     // }).catch((err) => {
     //     res.status(404).send(err)
     // })
-    res.send(req.user)
-})
-
-//find individual user
-Router.get('/user/:id', auth, async (req, res) => {
-    const _id = req.params.id
-    // User.findById(_id).then((user) => {
-    //     res.send(user)
-    // }).catch((err) => {
-    //     res.status(404).send('User not found');
-    // })
-    try{
-        const user = await User.findById(_id)
-        if (!user)
-            return res.status(404).send('No User Found')
-        res.send(user)
-    }
-    catch (e) {
-        res.status(500).send()
-    }
+    res.send({user: req.user.protectedData(req.user)})
 })
 
 //update user information
-Router.patch('/user/:id', auth, async (req, res) => {
-    const id = req.params.id;
+Router.patch('/user/me', auth, async (req, res) => {
     const updates = Object.keys(req.body)
-    const updatedUser = await User.findById(id)
     try {
-        if (!updatedUser)
-            res.status(404).send('No User Found')
-        else {updates.forEach(update => {
-            updatedUser[update] = req.body[update]
+        updates.forEach(update => {
+            req.user[update] = req.body[update]
         });
-            updatedUser.save()
-            res.send(updatedUser)
-        } 
+            req.user.save()
+            res.send({updatedUser: req.user.protectedData(req.user)})
     }
     catch (error) {
         res.send(error)
@@ -105,13 +81,10 @@ Router.patch('/user/:id', auth, async (req, res) => {
 })
 
 //delete user information
-Router.delete('/user/:id', auth, async (req, res) => {
-    const id = req.params.id;
+Router.delete('/user/me', auth, async (req, res) => {
     try {
-        const del = await User.findByIdAndDelete(id)
-        if (!del)
-            res.status(400).send('No User Found')
-        res.send(del)
+        res.send({ user: req.user.protectedData(req.user) })
+        req.user.remove()
     }
     catch (e) {
         res.status(500).send()

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const Tasks = require('./tasks');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -39,6 +40,12 @@ const userSchema = new mongoose.Schema({
             required: true,
         }
     }]
+})
+
+userSchema.virtual('tasks', {
+    ref: 'Tasks',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 userSchema.statics.findByCredentials = async (email, password) => {
