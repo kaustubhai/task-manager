@@ -86,6 +86,11 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
+userSchema.pre('remove', async function (req, res, next) {
+    await Tasks.deleteMany({owner: this._id})
+    next();
+})
+
 const User = mongoose.model('User', userSchema)
 
 module.exports = User
