@@ -33,7 +33,11 @@ Router.get('/tasks', auth, async (req, res) => {
     try {
         await req.user.populate({
             path: 'tasks',
-            match: check
+            match: check,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: parseInt((req.query.page-1)*3)
+            }
         }).execPopulate();
         if (!req.user.tasks || req.user.tasks.length === 0)
             return res.status(404).send('No Task Found')
