@@ -6,11 +6,6 @@ const auth = require('../auth')
 //create user
 Router.post('/user', async (req, res) => {
     const user = new User(req.body);
-    // user.save().then(() => {
-    //     res.send(user)
-    // }).catch((err) => {
-    //     res.status(400).send(err)
-    // })
     try {
         const account = await user.save()
         if (!account)
@@ -44,7 +39,7 @@ Router.post('/user/logout', auth, async (req, res) => {
 })
 
 //Logout the user from all the windows
-Router.get('/user/logout-all', auth, async (req, res) => {
+Router.post('/user/logout-all', auth, async (req, res) => {
     try {
         req.user.tokens = [];
         await req.user.save();
@@ -57,11 +52,6 @@ Router.get('/user/logout-all', auth, async (req, res) => {
 
 //find the user profile
 Router.get('/user/me', auth, async (req, res) => {
-    // User.find({}).then((user) => {
-    //     res.send(user)
-    // }).catch((err) => {
-    //     res.status(404).send(err)
-    // })
     res.send({user: req.user.protectedData(req.user)})
 })
 

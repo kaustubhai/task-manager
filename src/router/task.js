@@ -4,6 +4,7 @@ const auth = require('../auth');
 const Router = new express.Router()
 const Tasks = require('../models/tasks')
 
+//To Add Task in the Database
 Router.post('/', auth, async (req, res) => {
     const getTask = new Tasks({
         ...req.body,
@@ -20,31 +21,32 @@ Router.post('/', auth, async (req, res) => {
     }
 })
 
-
+//To get all the tasks
 Router.get('/tasks', auth, async (req, res) => {
-    // Tasks.find().then((task) => {
-    //     res.send(task)
-    // }).catch((err) => {
-    //     res.status(404).send('No Task found')
-    // })
+
+    const check = {}
+
+    if (req.query.completed) {
+        var query = req.query.completed === 'true' ? true : false;
+        check.completed= query
+    }
     try {
-        const tasks = await Tasks.find({owner: req.user._id})
-        if (!tasks || tasks.length === 0)
+        await req.user.populate({
+            path: 'tasks',
+            match: check
+        }).execPopulate();
+        if (!req.user.tasks || req.user.tasks.length === 0)
             return res.status(404).send('No Task Found')
-        res.send(tasks)
+        res.send(req.user.tasks)
     }
     catch (e) {
         res.status(500).send()
     }
 })
 
+//Get Specific task details
 Router.get('/task/:id', auth, async (req, res) => {
     const id = req.params.id;
-    // Tasks.findById(id).then((tasks) => {
-    //     res.send(tasks)
-    // }).catch((err) => {
-    //     res.status(404).send('No Task found')
-    // })
         const task = await Tasks.find({owner: req.user._id, _id: ObjectId(id)})
         if (!task || task.length === 0)
             res.status(404).send('No Task Founded')
@@ -54,6 +56,7 @@ Router.get('/task/:id', auth, async (req, res) => {
 
 })
 
+//Update specific task details
 Router.patch('/task/:id', auth, async (req, res) => {
     const id = req.params.id;
     const inc = ['completed', 'desc']
@@ -79,6 +82,7 @@ Router.patch('/task/:id', auth, async (req, res) => {
     }
 )
 
+//Delete Specific task
 Router.delete('/task/:id', auth, async (req, res) => {
     const id = req.params.id;
     try {
