@@ -2,6 +2,33 @@ const express = require('express');
 const Router = new express.Router()
 const User = require('../models/user');
 const auth = require('../auth')
+const multer = require('multer')
+
+var upload = multer({
+    limits: {
+        fileSize: 3000000,
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            cb(new Error('File format mismatch'))
+        }
+        cb(undefined, true)
+    }
+})
+
+Router.post('/uploads/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.send('Profile pic uploaded')
+},(error, req, res, next) => {
+        res.send(error.message)
+})
+
+Router.delete('/uploads/me/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined;
+    req.user.save()
+    res.send('Profile Picture Removed')
+})
 
 //create user
 Router.post('/user', async (req, res) => {

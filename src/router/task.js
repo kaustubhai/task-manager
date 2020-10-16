@@ -24,19 +24,26 @@ Router.post('/', auth, async (req, res) => {
 //To get all the tasks
 Router.get('/tasks', auth, async (req, res) => {
 
-    const check = {}
+    const status = {}
+    const order = {}
 
     if (req.query.completed) {
         var query = req.query.completed === 'true' ? true : false;
-        check.completed= query
+        status.completed= query
     }
+    if (req.query.sort) {
+        const queryParts = req.query.sort.split(':')
+        order[queryParts[0]] = queryParts[1] === 'desc' ? -1 : 1
+    }
+    console.log(order)
     try {
         await req.user.populate({
             path: 'tasks',
-            match: check,
+            match: status,
             options: {
                 limit: parseInt(req.query.limit),
-                skip: parseInt((req.query.page-1)*3)
+                skip: parseInt((req.query.page - 1) * 3),
+                sort: order
             }
         }).execPopulate();
         if (!req.user.tasks || req.user.tasks.length === 0)
