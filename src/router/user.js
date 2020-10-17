@@ -2,7 +2,8 @@ const express = require('express');
 const Router = new express.Router()
 const User = require('../models/user');
 const auth = require('../auth')
-const multer = require('multer')
+const multer = require('multer');
+const sharp = require('sharp');
 
 var upload = multer({
     limits: {
@@ -16,8 +17,21 @@ var upload = multer({
     }
 })
 
+Router.get('/users/me/avatar', auth, async (req, res) => {
+    try {
+        if (!req.user.avatar)
+            throw new Error('No profile picture found')
+        res.set('Content-Type', 'image/jpg')
+        res.send(req.user.avatar)
+    }
+    catch (e) {
+        res.status(404).send(e)
+    }
+})
+
 Router.post('/uploads/me/avatar', auth, upload.single('avatar'), async (req, res) => {
-    req.user.avatar = req.file.buffer;
+    const sharBuffer = await sharp(req.file.buffer).png().resize({height: 500, width: 500}).toBuffer()
+    req.user.avatar = sharBuffer;
     await req.user.save();
     res.send('Profile pic uploaded')
 },(error, req, res, next) => {
