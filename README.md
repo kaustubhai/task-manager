@@ -1,4 +1,4 @@
-# task-manager
+# Task Manager API
 Node Express Mongodb managed full fledged task manager app
 ## Features:
 * Authentication
